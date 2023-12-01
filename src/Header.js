@@ -1,11 +1,9 @@
-import { useEffect } from "react";
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { auth, provider } from "./services/auth"
-import { SignInGoogle } from './services/auth';
-import { setToken, toggleLogin } from "./store/reducers/auth";
-
+import { toggleLogin,removeToken } from "./store/reducers/auth";
+import { FaUserCircle } from "react-icons/fa";
+import { googleSignOut } from "./services/auth";
+import {useNavigate} from 'react-router-dom'
 // import {
 //   selectUserName,
 //   selectUserPhoto,
@@ -15,6 +13,7 @@ import { setToken, toggleLogin } from "./store/reducers/auth";
 
 const Header = (props) => {
   const dispatch = useDispatch();
+  const nav = useNavigate()
   const user = useSelector(state => state.user)
   // const userPhoto = useSelector(selectUserPhoto);
 
@@ -62,6 +61,11 @@ const Header = (props) => {
     dispatch(toggleLogin())
   }
 
+  function logOut() {
+    googleSignOut()
+    dispatch(removeToken())
+    nav('/auth')
+  }
 
   return (
     <Nav>
@@ -103,9 +107,12 @@ const Header = (props) => {
             </a>
           </NavMenu>
           <SignOut>
-            <UserImg src={''} alt={''} />
+              {
+                user.pic ?
+                <UserImg src={''} alt={''} /> :
+              <FaUserCircle />}
             <DropDown>
-              <span onClick={()=>{}}>Sign out</span>
+              <span onClick={logOut}>Sign out</span>
             </DropDown>
           </SignOut>
         </>

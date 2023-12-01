@@ -2,15 +2,13 @@ import React from 'react'
 import { Outlet,Navigate } from 'react-router-dom'
 import {useSelector} from 'react-redux'
 function AuthProtect() {
-  const token = useSelector(state => state.user?.token)
+  const user = useSelector(state => state.user)
 
-  console.log(token);
-  if (!token) {
+  if (!user?.token) {
     return <Navigate to='/auth' />
   }
   return (
     <>
-    <div style={{color:'#fff'}}>AuthProtect</div>
     <Outlet />
     </>
   )

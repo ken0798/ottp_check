@@ -1,4 +1,4 @@
-import { getAuth, signInWithPopup, GoogleAuthProvider,createUserWithEmailAndPassword,signInWithEmailAndPassword  } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut  } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -79,4 +79,13 @@ export const LoginWithEmail = async ({email,password}) => {
     reject({errorCode,errorMessage})
   });
   })
+}
+
+export const googleSignOut = () => {
+  signOut(auth).then(() => {
+    // Sign-out successful.
+    localStorage.removeItem('TOKEN')
+  }).catch((error) => {
+    // An error happened.
+  });
 }

@@ -4,7 +4,7 @@ import { setToken } from "./store/reducers/auth";
 import { useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
 import { SignInGoogle, LoginWithEmail, RegisterWithEmail } from "./services/auth";
-import {useNavigate} from 'react-router-dom'
+import {useNavigate,Navigate} from 'react-router-dom'
 const Container = styled.section`
   overflow: hidden;
   display: flex;
@@ -143,18 +143,19 @@ const Login = (props) => {
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const nav= useNavigate()
   const dispatch = useDispatch()
-  const viewLogin = useSelector(state => state.user?.viewLogin)
+  const user = useSelector(state => state.user)
   async function dataSubmitLogin(data) {
     console.log(data);
     const { email, password } = data 
     try {
       const user = await LoginWithEmail({ email, password })
       console.log(user);
-      setToken(user.accessToken)
+      dispatch(setToken(user.accessToken))
+      localStorage.setItem('TOKEN',user.accessToken)
       nav('/')
       
     } catch (error) {
-      
+      alert(error.errorMessage)
     }
   }
   async function dataSubmitRegister(data) {
@@ -167,24 +168,31 @@ const Login = (props) => {
     try {
       const user = await RegisterWithEmail({ email, password })
       console.log(user);
-      setToken(user.accessToken)
+      dispatch(setToken(user.accessToken))
+      localStorage.setItem('TOKEN',user.accessToken)
       nav('/')
       
     } catch (error) {
-      
+      alert(error.errorMessage)
     }
   }
   async function loginGoogle() {
     const { token } = await SignInGoogle()
     dispatch(setToken(token))
+    localStorage.setItem('TOKEN',token)
+    nav('/')
     console.log(token); 
+  }
+  console.log(user);
+  if (!!user?.token) {
+    return <Navigate to='/' />
   }
   return (
     <Container>
       <Content>
         <CTA>
           <CTALogoOne src="/images/cta-logo-one.svg" alt="" />
-          {!viewLogin ? (
+          {!user.viewLogin ? (
                         <Form onSubmit={handleSubmit(dataSubmitRegister)}>
                         <Label error={errors.email}>User Email</Label>
                         <Input
