@@ -1,18 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { styled } from "styled-components";
-import { getMovies, imgUrl } from "../services/movies";
+import { getMovies } from "../services/movies";
 import { setTrending } from "../store/reducers/movies";
 import { useDispatch, useSelector } from "react-redux";
-import { LazyLoadImage } from "react-lazy-load-image-component";
-import "react-lazy-load-image-component/src/effects/blur.css";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
 import Carousel from "./carousel";
 
 function Features({ data }) {
   const [active, setActive] = useState("day");
   const dispatch = useDispatch();
-  const nav = useNavigate();
   const movies = useSelector((state) => state.movies);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef(null);
