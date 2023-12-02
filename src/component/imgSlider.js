@@ -44,9 +44,6 @@ const ImgSlider = (props) => {
     dispatch(setHistory(movie));
     const url = await getMovieTrailer(movie);
     setTrailerUrl(url);
-    if (!trailerUrl) {
-      return <div>Loading...</div>;
-    }
   };
   let settings = {
     dots: true,
@@ -57,7 +54,6 @@ const ImgSlider = (props) => {
     autoplay: false,
   };
   const movies = useSelector((state) => state.movies);
-  console.log(movies?.watchHistory);
   return (
     <>
       <Carousel {...settings}>
@@ -69,7 +65,7 @@ const ImgSlider = (props) => {
             key={e.id}
             time={moment(e.release_date).format("ll")}
           >
-            <a href={`/details/${e.id}`}>
+            <a href >
               <LazyLoadImage
                 effect="blur"
                 src={imgUrl + e?.backdrop_path}

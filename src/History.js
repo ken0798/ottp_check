@@ -48,12 +48,20 @@ const Wrapper = styled.section`
   }
 
   .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(125px, 0.4fr));
+    /* display: grid; */
+    /* grid-template-columns: repeat(auto-fit, minmax(125px, 0.4fr)); */
+    display: flex;
     gap: 20px;
     width: 100%;
+    flex-wrap: wrap;
+    span{
+      height: 250px;
+      width: 180px;
+    }
     .carousel_img {
       width: 100%;
+      height: 100%;
+      object-fit: cover;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.5s ease-in;
