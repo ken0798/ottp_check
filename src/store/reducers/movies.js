@@ -4,7 +4,9 @@ const initialState = {
   nowPlaying: [],
   popular: [],
   trended: [],
-  upComing:[]
+  upComing: [],
+  movie: null,
+  watchHistory:[]
 }
 
 export const movieSlice = createSlice({
@@ -22,6 +24,12 @@ export const movieSlice = createSlice({
     },
     setTrending(state, action) {
       state.trended = action.payload
+    },
+    setMovie(state, action) {
+      state.movie = action.payload
+    },
+    setHistory(state, action) {
+      state.watchHistory = [...state.watchHistory,action.payload]
     }
   },
 })
@@ -30,6 +38,6 @@ export const movieSlice = createSlice({
 export const { setNowPlaying,
   setPopular,
   setUpcoming,
-  setTrending} = movieSlice.actions
+  setTrending,setMovie,setHistory} = movieSlice.actions
 
 export default movieSlice.reducer

@@ -2,13 +2,54 @@ import styled from "styled-components";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
-import {useSelector} from 'react-redux'
+import {useSelector,useDispatch} from 'react-redux'
 import { imgUrl } from "../services/movies";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import moment from "moment";
+import axios from 'axios'
+import YouTube from "react-youtube";
+import { useState } from "react";
+import { setHistory } from "../store/reducers/movies";
+import { IoCloseCircle } from "react-icons/io5";
+const API_KEY = "cf368287dabf371a97e4e78fe0dd33ed"
+
 
 const ImgSlider = (props) => {
+  const dispatch = useDispatch();
+  const watchedMovies = useSelector((state) => state.movies.watchedHistory);
+  const [trailerUrl, setTrailerUrl] = useState(null);
+
+  const getMovieTrailer = async (movie) => {
+    try {
+      const detailsResponse = await axios.get(
+        `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${API_KEY}&append_to_response=videos`
+      );
+
+      const videos = detailsResponse.data.videos.results;
+      const trailer = videos.find(
+        (video) => video.type === "Trailer" || "Clip"
+      );
+
+      const youtubeUrl = trailer.key;
+
+      return youtubeUrl;
+    } catch (error) {
+      console.error("Error fetching movie information:", error);
+      return null;
+    }
+  };
+
+  const callMovieTrailer = async (movie) => {
+    const url = await getMovieTrailer(movie);
+
+    dispatch(setHistory(movie.title));
+    setTrailerUrl(url);
+
+    if (!trailerUrl) {
+      return <div>Loading...</div>;
+    }
+  };
   let settings = {
     dots: true,
     infinite: true,
@@ -17,24 +58,43 @@ const ImgSlider = (props) => {
     slidesToScroll: 1,
     autoplay: true,
   };
-  const movies = useSelector(state=>state.movies)
+  const movies = useSelector(state => state.movies)
+  const opts = {
+    height: "390",
+    width: "100%",
+    playerVars: {
+      // https://developers.google.com/youtube/player_parameters
+      autoplay: 1,
+    },
+  };
   return (
-    <Carousel {...settings}>
-      {
-        movies?.nowPlaying.map((e) => (
-        <Wrap key={e.id} time={moment(e.release_date).format('ll')}>
-            <a>
-              <LazyLoadImage effect="blur" src={imgUrl + e?.backdrop_path} alt="" />
-              <div>
-                <h1>{e.title}</h1>
-                <p>{e.overview }</p>
-              </div>
-          </a>
-        </Wrap>
-          
-        ))
-      }
-    </Carousel>
+    <>
+      <Carousel {...settings}>
+        {
+          movies?.nowPlaying.map((e) => (
+          <Wrap key={e.id} time={moment(e.release_date).format('ll')}>
+              <a>
+                <LazyLoadImage effect="blur" src={imgUrl + e?.backdrop_path} alt="" />
+                <div>
+                  <h1>{e.title}</h1>
+                  <p>{e.overview}</p>
+                  <button onClick={callMovieTrailer.bind(null,e)}>Watch Video</button>
+                </div>
+            </a>
+          </Wrap>
+            
+          ))
+        }
+      </Carousel>
+      {trailerUrl && (
+        <>
+          <IoCloseCircle  onClick={() => {
+              setTrailerUrl("");
+            }} />
+          <YouTube videoId={trailerUrl} opts={opts} />
+        </>
+      )}
+    </>
   );
 };
 

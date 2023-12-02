@@ -7,6 +7,6 @@ const headers = {
   Authorization:`Bearer ${AuthToken}`
 }
 
-export const getMovies = (path) => axios.get(`${baseUrl}/movie/${path}`, {
+export const getMovies = (path) => axios.get(`${baseUrl}${path}`, {
   headers,
 }).then((res)=>res).catch((e)=>e)

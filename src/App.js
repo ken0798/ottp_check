@@ -11,9 +11,8 @@ const App = (props) => {
   const dispatch = useDispatch();
   // const userName = useSelector(selectUserName);
   useEffect(() => {
-    console.log("hello");
     (async () => {
-      const {data:{results}} = await getMovies('now_playing')
+      const {data:{results}} = await getMovies('/movie/now_playing')
       console.log(results);
       dispatch(setNowPlaying(results))
     })()
@@ -23,11 +22,6 @@ const App = (props) => {
     <>
       <Container>
         <ImgSlider />
-        {/* <Viewers />
-        <Recommends />
-        <NewDisney />
-        <Originals />
-        <Trending /> */}
       </Container>
       <Features/>
     </>
