@@ -1,21 +1,21 @@
 import styled from "styled-components";
-import ImgSlider from './component/imgSlider';
+import ImgSlider from "./component/imgSlider";
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { getMovies } from "./services/movies";
 import { setNowPlaying } from "./store/reducers/movies";
 import Features from "./component/section";
 
-
-const App = (props) => {
+const Home = (props) => {
   const dispatch = useDispatch();
-  // const userName = useSelector(selectUserName);
   useEffect(() => {
     (async () => {
-      const {data:{results}} = await getMovies('/movie/now_playing')
+      const {
+        data: { results },
+      } = await getMovies("/movie/now_playing");
       console.log(results);
-      dispatch(setNowPlaying(results))
-    })()
+      dispatch(setNowPlaying(results));
+    })();
   }, []);
 
   return (
@@ -23,7 +23,7 @@ const App = (props) => {
       <Container>
         <ImgSlider />
       </Container>
-      <Features/>
+      <Features />
     </>
   );
 };
@@ -47,4 +47,4 @@ const Container = styled.main`
   }
 `;
 
-export default App;
+export default Home;

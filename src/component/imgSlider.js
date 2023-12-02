@@ -2,24 +2,25 @@ import styled from "styled-components";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
-import {useSelector,useDispatch} from 'react-redux'
+import { useSelector, useDispatch } from "react-redux";
 import { imgUrl } from "../services/movies";
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 import moment from "moment";
-import axios from 'axios'
+import axios from "axios";
 import YouTube from "react-youtube";
 import { useState } from "react";
 import { setHistory } from "../store/reducers/movies";
 import { IoCloseCircle } from "react-icons/io5";
-const API_KEY = "cf368287dabf371a97e4e78fe0dd33ed"
+import { useNavigate } from "react-router-dom";
+import VideoPlayer from "./videoPlayer";
 
+const API_KEY = "cf368287dabf371a97e4e78fe0dd33ed";
 
 const ImgSlider = (props) => {
   const dispatch = useDispatch();
-  const watchedMovies = useSelector((state) => state.movies.watchedHistory);
   const [trailerUrl, setTrailerUrl] = useState(null);
-
+  const nav = useNavigate();
   const getMovieTrailer = async (movie) => {
     try {
       const detailsResponse = await axios.get(
@@ -40,12 +41,11 @@ const ImgSlider = (props) => {
     }
   };
 
-  const callMovieTrailer = async (movie) => {
+  const callMovieTrailer = async (movie, e) => {
+    e.stopPropagation();
+    dispatch(setHistory(movie));
     const url = await getMovieTrailer(movie);
-
-    dispatch(setHistory(movie.title));
     setTrailerUrl(url);
-
     if (!trailerUrl) {
       return <div>Loading...</div>;
     }
@@ -56,9 +56,10 @@ const ImgSlider = (props) => {
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: false,
   };
-  const movies = useSelector(state => state.movies)
+  const movies = useSelector((state) => state.movies);
+  console.log(movies?.watchHistory);
   const opts = {
     height: "390",
     width: "100%",
@@ -70,29 +71,33 @@ const ImgSlider = (props) => {
   return (
     <>
       <Carousel {...settings}>
-        {
-          movies?.nowPlaying.map((e) => (
-          <Wrap key={e.id} time={moment(e.release_date).format('ll')}>
-              <a>
-                <LazyLoadImage effect="blur" src={imgUrl + e?.backdrop_path} alt="" />
-                <div>
-                  <h1>{e.title}</h1>
-                  <p>{e.overview}</p>
-                  <button onClick={callMovieTrailer.bind(null,e)}>Watch Video</button>
-                </div>
+        {movies?.nowPlaying.map((e) => (
+          <Wrap
+            onClick={() => {
+              nav(`/details/${e.id}`);
+            }}
+            key={e.id}
+            time={moment(e.release_date).format("ll")}
+          >
+            <a>
+              <LazyLoadImage
+                effect="blur"
+                src={imgUrl + e?.backdrop_path}
+                alt=""
+              />
+              <div>
+                <h1>{e.title}</h1>
+                <p>{e.overview}</p>
+                <button onClick={callMovieTrailer.bind(null, e)}>
+                  Watch Video
+                </button>
+              </div>
             </a>
           </Wrap>
-            
-          ))
-        }
+        ))}
       </Carousel>
       {trailerUrl && (
-        <>
-          <IoCloseCircle  onClick={() => {
-              setTrailerUrl("");
-            }} />
-          <YouTube videoId={trailerUrl} opts={opts} />
-        </>
+        <VideoPlayer trailerUrl={trailerUrl} setTrailerUrl={setTrailerUrl} />
       )}
     </>
   );
@@ -113,7 +118,7 @@ const Carousel = styled(Slider)`
     }
   }
 
-  .slick-dots{
+  .slick-dots {
     bottom: 15px;
   }
 
@@ -155,8 +160,8 @@ const Wrap = styled.div`
     position: relative;
     padding: 4px;
 
-    span{
-      height:100%;
+    span {
+      height: 100%;
       width: 100%;
       display: inline-block;
     }
@@ -168,15 +173,15 @@ const Wrap = styled.div`
       object-position: top;
     }
 
-    div{
+    div {
       position: absolute;
       background-color: rgb(0 0 0 / 49%);
       padding: 40px;
       inset: 0;
-      h1{
+      h1 {
         position: relative;
-        &:after{
-          content: '- released on ${props=>props.time}';
+        &:after {
+          content: "- released on ${(props) => props.time}";
           font-size: 10px;
           font-weight: 100;
           position: absolute;
@@ -185,11 +190,28 @@ const Wrap = styled.div`
         }
         margin-bottom: 20px;
       }
-      p{
+      p {
         font-size: 15px;
         font-weight: 400;
-        color: #dbdbdbdd;  
-      } 
+        color: #dbdbdbdd;
+      }
+      button {
+        margin-block: 20px;
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 8px 16px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        border: 1px solid #f9f9f9;
+        border-radius: 4px;
+        transition: all 0.2s ease 0s;
+        color: #f9f9f9;
+        cursor: pointer;
+        &:hover {
+          background-color: #f9f9f9;
+          color: #000;
+          border-color: transparent;
+        }
+      }
     }
 
     &:hover {

@@ -1,9 +1,12 @@
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleLogin,removeToken } from "./store/reducers/auth";
+import { toggleLogin, removeToken } from "./store/reducers/auth";
 import { FaUserCircle } from "react-icons/fa";
 import { googleSignOut } from "./services/auth";
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
+import { getMovies, imgUrl } from "./services/movies";
+import { useState } from "react";
+import { CiMenuBurger } from "react-icons/ci";
 // import {
 //   selectUserName,
 //   selectUserPhoto,
@@ -13,58 +16,27 @@ import {useNavigate} from 'react-router-dom'
 
 const Header = (props) => {
   const dispatch = useDispatch();
-  const nav = useNavigate()
-  const user = useSelector(state => state.user)
-  // const userPhoto = useSelector(selectUserPhoto);
+  const nav = useNavigate();
+  const user = useSelector((state) => state.user);
+  const [movieSearch, setMovieSearch] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [viewMenu, setViewMenu] = useState(false);
 
-  // useEffect(() => {
-  //   auth.onAuthStateChanged(async (user) => {
-  //     if (user) {
-  //       setUser(user);
-  //       history.push("/home");
-  //     }
-  //   });
-  // }, [userName]);
-
-  // const handleAuth = () => {
-  //   if (!userName) {
-  //     auth
-  //       .signInWithPopup(provider)
-  //       .then((result) => {
-  //         setUser(result.user);
-  //       })
-  //       .catch((error) => {
-  //         alert(error.message);
-  //       });
-  //   } else if (userName) {
-  //     auth
-  //       .signOut()
-  //       .then(() => {
-  //         dispatch(setSignOutState());
-  //         history.push("/");
-  //       })
-  //       .catch((err) => alert(err.message));
-  //   }
-  // };
-
-  // const setUser = (user) => {
-  //   dispatch(
-  //     setUserLoginDetails({
-  //       name: user.displayName,
-  //       email: user.email,
-  //       photo: user.photoURL,
-  //     })
-  //   );
-  // };
+  const searchMovies = async () => {
+    const {
+      data: { results },
+    } = await getMovies(`/search/movie?query=${movieSearch}`);
+    setSearchResults(results);
+  };
 
   function toggleAuth() {
-    dispatch(toggleLogin())
+    dispatch(toggleLogin());
   }
 
   function logOut() {
-    googleSignOut()
-    dispatch(removeToken())
-    nav('/auth')
+    googleSignOut();
+    dispatch(removeToken());
+    nav("/auth");
   }
 
   return (
@@ -74,52 +46,316 @@ const Header = (props) => {
       </Logo>
 
       {!user?.token ? (
-        
-          !user?.viewLogin ?
-          <Login onClick={toggleAuth}>Login</Login>:
-        <Login onClick={toggleAuth}>Register</Login>
+        !user?.viewLogin ? (
+          <Login onClick={toggleAuth}>Login</Login>
+        ) : (
+          <Login onClick={toggleAuth}>Register</Login>
+        )
       ) : (
         <>
           <NavMenu>
-            <a href="/home">
+            <a href="/">
               <img src="/images/home-icon.svg" alt="HOME" />
               <span>HOME</span>
             </a>
-            <a>
-              <img src="/images/search-icon.svg" alt="SEARCH" />
-              <span>SEARCH</span>
-            </a>
-            <a>
+            <SearchDiv>
+              <input
+                value={movieSearch}
+                onChange={(e) => setMovieSearch(e.target.value)}
+                type="text"
+                placeholder="Search..."
+              />
+              <img
+                onClick={() => {
+                  searchMovies();
+                }}
+                src="/images/search-icon.svg"
+                alt="SEARCH"
+              />
+            </SearchDiv>
+            {searchResults.length > 0 && (
+              <div
+                style={{
+                  position: "fixed",
+                  zIndex: 2,
+                  inset: 0,
+                  background: "rgba(0,0,0,0.2)",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSearchResults([]);
+                  setMovieSearch("");
+                }}
+              >
+                <ResultDiv>
+                  {searchResults &&
+                    searchResults.map((result, index) => (
+                      <div
+                        onClick={() => {
+                          nav(`/details/${result.id}`);
+                          setSearchResults([]);
+                          setMovieSearch("");
+                        }}
+                      >
+                        <img src={imgUrl + result?.poster_path} alt="" />
+                        <div>
+                          <h1>{result.title || result.original_title}</h1>
+                          <p>
+                            {result.overview.split(" ").slice(0, 25).join(" ")}
+                            {result.overview.split(" ").length > 25
+                              ? "..."
+                              : ""}
+                          </p>
+                          <h1>
+                            Year : {new Date(result.release_date).getFullYear()}
+                          </h1>
+                        </div>
+                      </div>
+                    ))}
+                </ResultDiv>
+              </div>
+            )}
+            <a href="/history">
               <img src="/images/watchlist-icon.svg" alt="WATCHLIST" />
-              <span>WATCHLIST</span>
-            </a>
-            <a>
-              <img src="/images/original-icon.svg" alt="ORIGINALS" />
-              <span>ORIGINALS</span>
-            </a>
-            <a>
-              <img src="/images/movie-icon.svg" alt="MOVIES" />
-              <span>MOVIES</span>
-            </a>
-            <a>
-              <img src="/images/series-icon.svg" alt="SERIES" />
-              <span>SERIES</span>
+              <span>WATCHHISTORY</span>
             </a>
           </NavMenu>
+          <CiMenuBurger
+            onClick={() => {
+              console.log("yes");
+              setViewMenu(true);
+            }}
+            className="ham_icon"
+          />
+
           <SignOut>
-              {
-                user.pic ?
-                <UserImg src={''} alt={''} /> :
-              <FaUserCircle />}
+            {user.pic ? <UserImg src={""} alt={""} /> : <FaUserCircle />}
             <DropDown>
               <span onClick={logOut}>Sign out</span>
             </DropDown>
           </SignOut>
+          {viewMenu ? (
+            <MobileMenu
+              onClick={(e) => {
+                e.stopPropagation();
+                setViewMenu(false);
+              }}
+            >
+              <div>
+                <a href="/">
+                  <img src="/images/home-icon.svg" alt="HOME" />
+                  <span>HOME</span>
+                </a>
+                <SearchDiv>
+                  <input
+                    value={movieSearch}
+                    onChange={(e) => setMovieSearch(e.target.value)}
+                    type="text"
+                    placeholder="Search..."
+                  />
+                  <img
+                    onClick={() => {
+                      searchMovies();
+                    }}
+                    src="/images/search-icon.svg"
+                    alt="SEARCH"
+                  />
+                </SearchDiv>
+                {searchResults.length > 0 && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      zIndex: 2,
+                      inset: 0,
+                      background: "rgba(0,0,0,0.2)",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSearchResults([]);
+                      setMovieSearch("");
+                    }}
+                  >
+                    <ResultDiv>
+                      {searchResults &&
+                        searchResults.map((result, index) => (
+                          <div
+                            onClick={() => {
+                              nav(`/details/${result.id}`);
+                              setSearchResults([]);
+                              setMovieSearch("");
+                            }}
+                          >
+                            <img src={imgUrl + result?.poster_path} alt="" />
+                            <div>
+                              <h1>{result.title || result.original_title}</h1>
+                              <p>
+                                {result.overview
+                                  .split(" ")
+                                  .slice(0, 25)
+                                  .join(" ")}
+                                {result.overview.split(" ").length > 25
+                                  ? "..."
+                                  : ""}
+                              </p>
+                              <h1>
+                                Year :{" "}
+                                {new Date(result.release_date).getFullYear()}
+                              </h1>
+                            </div>
+                          </div>
+                        ))}
+                    </ResultDiv>
+                  </div>
+                )}
+                <a href="/history">
+                  <img src="/images/watchlist-icon.svg" alt="WATCHLIST" />
+                  <span>WATCH HISTORY</span>
+                </a>
+                <div className="mobile_user">
+                  {user.pic ? <UserImg src={""} alt={""} /> : <FaUserCircle />}
+
+                  <span onClick={logOut}>Sign out</span>
+                </div>
+              </div>
+            </MobileMenu>
+          ) : null}
         </>
       )}
     </Nav>
   );
 };
+
+const MobileMenu = styled.nav`
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  min-height: 100vh;
+  z-index: 8;
+  > div {
+    padding: 8px;
+    background-color: black;
+    height: 100%;
+    gap: 20px;
+    flex-direction: column;
+    display: flex;
+    width: 350px;
+    padding-top: 20px;
+  }
+  a {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    span {
+      line-height: 20px;
+    }
+    img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  .mobile_user {
+    span {
+      margin-left: 16px;
+      cursor: pointer;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 8px 16px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      border: 1px solid #f9f9f9;
+      border-radius: 4px;
+      transition: all 0.2s ease 0s;
+
+      &:hover {
+        background-color: #f9f9f9;
+        color: #000;
+        border-color: transparent;
+      }
+    }
+  }
+  @media (min-width: 768px) {
+    display: none;
+  }
+`;
+
+const SearchDiv = styled.div`
+  display: flex;
+  border: 1px solid #fff;
+  border-radius: 5px;
+  overflow: hidden;
+  height: 40px;
+  background-color: transparent;
+  align-items: center;
+  input {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    outline: none;
+    background-color: transparent;
+    color: white;
+  }
+  img {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+`;
+
+const ResultDiv = styled.div`
+  max-width: 500px;
+  width: 100%;
+  min-height: 100px;
+  max-height: 250px;
+  background-color: #090b13;
+  border-radius: 10px;
+  position: absolute;
+  top: 85px;
+  left: 175px;
+  padding: 15px;
+  overflow-y: scroll;
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  div {
+    cursor: pointer;
+    padding: 10px;
+    border-bottom: 1px solid white;
+    display: flex;
+    justify-content: space-between;
+    div {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      flex-direction: column;
+      border-bottom: none;
+      h1 {
+        font-size: 12px !important;
+        letter-spacing: 0px !important;
+      }
+      p {
+        letter-spacing: 0px !important;
+        font-size: 8px !important;
+        text-decoration: none !important;
+      }
+      & > h1:last-child {
+        font-size: 8px !important;
+      }
+    }
+    img {
+      width: 50px;
+      height: 60px;
+    }
+  }
+`;
 
 const Nav = styled.nav`
   position: fixed;
@@ -134,6 +370,14 @@ const Nav = styled.nav`
   padding: 0 36px;
   letter-spacing: 16px;
   z-index: 3;
+  .ham_icon {
+    cursor: pointer;
+  }
+  @media (min-width: 768px) {
+    .ham_icon {
+      display: none;
+    }
+  }
 `;
 
 const Logo = styled.a`
@@ -166,6 +410,7 @@ const NavMenu = styled.div`
     display: flex;
     align-items: center;
     padding: 0 12px;
+    cursor: pointer;
 
     img {
       height: 20px;
@@ -210,9 +455,9 @@ const NavMenu = styled.div`
     }
   }
 
-  /* @media (max-width: 768px) {
+  @media (max-width: 768px) {
     display: none;
-  } */
+  }
 `;
 
 const Login = styled.a`
@@ -270,6 +515,9 @@ const SignOut = styled.div`
       opacity: 1;
       transition-duration: 1s;
     }
+  }
+  @media (max-width: 768px) {
+    display: none;
   }
 `;
 
