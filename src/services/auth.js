@@ -1,7 +1,6 @@
 import { getAuth, signInWithPopup, GoogleAuthProvider,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut  } from "firebase/auth";
 import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -34,12 +33,7 @@ const token = credential.accessToken;
 // ...
 }).catch((error) => {
 // Handle Errors here.
-const errorCode = error.code;
-const errorMessage = error.message;
-// The email of the user's account used.
-const email = error.customData.email;
 // The AuthCredential type that was used.
-const credential = GoogleAuthProvider.credentialFromError(error);
   // ...
   reject(error)
 });

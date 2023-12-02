@@ -8,10 +8,8 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import moment from "moment";
 import axios from "axios";
-import YouTube from "react-youtube";
 import { useState } from "react";
 import { setHistory } from "../store/reducers/movies";
-import { IoCloseCircle } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import VideoPlayer from "./videoPlayer";
 
@@ -60,14 +58,6 @@ const ImgSlider = (props) => {
   };
   const movies = useSelector((state) => state.movies);
   console.log(movies?.watchHistory);
-  const opts = {
-    height: "390",
-    width: "100%",
-    playerVars: {
-      // https://developers.google.com/youtube/player_parameters
-      autoplay: 1,
-    },
-  };
   return (
     <>
       <Carousel {...settings}>
@@ -79,7 +69,7 @@ const ImgSlider = (props) => {
             key={e.id}
             time={moment(e.release_date).format("ll")}
           >
-            <a>
+            <a href={`/details/${e.id}`}>
               <LazyLoadImage
                 effect="blur"
                 src={imgUrl + e?.backdrop_path}
