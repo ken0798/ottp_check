@@ -30,7 +30,7 @@ function Features({ data }) {
         setLoading(false);
       }
     })();
-  }, [active]);
+  }, [active,dispatch]);
 
   const handleSlide = (dir) => {
     const container = scrollRef.current;

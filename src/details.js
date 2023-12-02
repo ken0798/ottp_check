@@ -51,7 +51,7 @@ function Details() {
         setLoading(false);
       }
     })();
-  }, [movie_id]);
+  }, [movie_id,dispatch]);
   const getMovieTrailer = async (movie) => {
     try {
       const detailsResponse = await axios.get(

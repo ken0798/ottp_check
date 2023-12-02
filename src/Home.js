@@ -16,7 +16,7 @@ const Home = (props) => {
       console.log(results);
       dispatch(setNowPlaying(results));
     })();
-  }, []);
+  }, [dispatch]);
 
   return (
     <>
